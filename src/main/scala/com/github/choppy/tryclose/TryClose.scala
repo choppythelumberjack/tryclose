@@ -2,8 +2,8 @@ package com.github.choppy.tryclose
 
 import java.io.IOException
 
-import com.github.choppy.tryclose.TryClose.Implicits.CloseableUnit
 import com.github.choppy.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
+import com.sun.xml.internal.ws.spi.db.WrapperComposite
 
 import scala.util.control.NonFatal
 
@@ -12,14 +12,13 @@ trait CanClose[T] {
   def close(closeable: T): Unit
 }
 
-trait TryCloseImplicits {
+trait ImplicitCloseHelper {
 
   private[tryclose] def implicitlyCloseAndHandle[T](
     v: Option[T],
     closeHandler: CloseHandler
   )(implicit evidence: CanClose[T]): Unit =
   {
-    val unitEvidence = CloseableUnit
     val output =
       v.map(
         closeable =>
@@ -36,16 +35,7 @@ trait TryCloseImplicits {
   }
 }
 
-// Success an failure don't close anything so they don't need evidence it's closeable
-trait TryCloseResult[+T]
-final case class Success[+T](value:T) extends TryCloseResult[T] {
-  def get = value
-}
-final case class Failure[+T](exception: Throwable) extends TryCloseResult[T]
-
-
-
-abstract class TryClose[+T](implicit evidence:CanClose[T]) extends TryCloseImplicits {
+abstract class TryClose[+T](implicit evidence:CanClose[T]) extends ImplicitCloseHelper {
   def handler:CloseHandler = tc=>Unit
   def resolve:TryCloseResult[T] = {
     retrieve(new IdentityContinuation)
@@ -144,45 +134,23 @@ abstract class TryClose[+T](implicit evidence:CanClose[T]) extends TryCloseImpli
   // TODO Foreach
 }
 
+case class Wrapper[+T](private val element:T) {
+  def get:T = element
+}
 
-
-
-
+case class LambdaWrapper[T](element:T, close:T=>Unit) {
+  def get:T = element
+}
 
 object TryClose {
+
+  import ImplicitCloseables._
 
   type CloseHandler = (TryCloseResult[Unit]) => Unit
   type Continuation[T, U] = (TryCloseResult[T]) => TryCloseResult[U]
 
   class IdentityContinuation[T] extends Continuation[T, T] {
     override def apply(s: TryCloseResult[T]): TryCloseResult[T] = s
-  }
-
-  object Implicits {
-    object Structural {
-      implicit class StructuralCloseable[T <: {def close():Unit}](structuralCloseable:T) extends CanClose[T] {
-        override def close(t: T): Unit = structuralCloseable.close()
-      }
-    }
-
-    implicit class CloseableThrowable[T <: Throwable](t: T) extends CanClose[T] {
-      override def close(t: T): Unit = Unit
-    }
-
-    implicit object CloseableAutoCloseable extends CanClose[AutoCloseable] {
-      override def close(t: AutoCloseable): Unit = t.close()
-    }
-
-    implicit object CloseableUnit extends CanClose[Unit] {
-      override def close(t: Unit): Unit = Unit
-    }
-  }
-
-  class FakeCloseable[T] extends CanClose[T] {
-    override def close(t: T): Unit = Unit
-  }
-  class LambdaCloseable[T](closer:T => Unit) extends CanClose[T] {
-    override def close(t: T): Unit = closer(t)
   }
 
   private[tryclose] def liftCloseable[T](
@@ -210,4 +178,9 @@ object TryClose {
   def apply[T](value: => T, closeHandler: CloseHandler = (tc=>Unit))(implicit evidence:CanClose[T]) =
     TryClose.liftCloseable(() => value, closeHandler)(evidence)
 
+  def wrap[T](value: => T, closeHandler: CloseHandler = (tc=>Unit)) =
+    TryClose.liftCloseable(() => Wrapper[T](value), closeHandler)
+
+  def wrapWithCloser[T](value: => T, closeHandler: CloseHandler = (tc=>Unit))(closer:T=>Unit) =
+    TryClose.liftCloseable(() => LambdaWrapper[T](value, closer), closeHandler)
 }
