@@ -1,8 +1,6 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
 import java.io.IOException
-
-import com.github.choppy
 
 // General questions
 // - What is the user expectation for the behavior to occour on a 'map' method? Should a functor case close the inner closeable? The outer closeable?
@@ -23,7 +21,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
   "Using Map" - {
     "should close both outer layers if two outer layers fail" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .mapWithHandler(firstClosing => DummyCloseable("Inner", Throws), closeHandler("Inner"))
           .flatMap(secondClosing => TryClose(DummyCloseable("Core", NotThrows)))
 
@@ -56,7 +54,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if second fails to close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
           .mapWithHandler(firstClosing => DummyCloseable("Inner", Throws), closeHandler("Inner"))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -70,7 +68,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if both fail to close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .mapWithHandler(firstClosing => DummyCloseable("Inner", Throws), closeHandler("Inner"))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -86,7 +84,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception" in {
       val output =
-        choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+        TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
           .mapWithHandler(firstClosing => DummyCloseable("Inner", NotThrows), closeHandler("Inner"))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
@@ -97,7 +95,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception - ignore second, even it it throws" in {
       val output =
-        choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+        TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
           .mapWithHandler(firstClosing => DummyCloseable("Inner", Throws), closeHandler("Inner"))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
@@ -108,7 +106,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
           .mapWithHandler(firstClosing => somethingThatThrowsException("Inner"), closeHandler("Inner"))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
@@ -121,7 +119,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception - with first throwing exception on close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .mapWithHandler(firstClosing => somethingThatThrowsException("Inner"), closeHandler("Inner"))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
@@ -138,8 +136,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
   "Using FlatMap" - {
     "should close both outer layers if two outer layers fail" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
           .flatMap(secondClosing => TryClose(DummyCloseable("Core", NotThrows)))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Core", NotThrows)))
@@ -157,8 +155,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should close both layers if first fails to close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner")))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", NotThrows)))
       lineage should equal(List(
@@ -171,8 +169,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if second fails to close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(List(
@@ -185,8 +183,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if both fail to close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(List(
@@ -201,8 +199,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception" in {
       val output =
-        choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner")))
+        TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner")))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
       lineage should equal(List(
@@ -212,8 +210,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception - ignore second, even it it throws" in {
       val output =
-        choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
+        TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner")))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
       lineage should equal(List(
@@ -223,8 +221,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner")))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
       lineage should equal(List(
@@ -236,8 +234,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception - with first throwing exception on close" in {
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner")))
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
       lineage should equal(List(
@@ -253,8 +251,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
   "Using For Comprehension" - {
     "should close both outer layers if two outer layers fail" in {
       val output = for {
-        firstClosing  <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-        secondClosing <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        firstClosing  <- TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        secondClosing <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
         ye <- TryClose(DummyCloseable("Core", NotThrows))
       } yield (ye)
 
@@ -274,8 +272,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should close both layers if first fails to close" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner"))
+        firstClosing <- TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        ye <- TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", NotThrows)))
@@ -289,8 +287,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if second fails to close" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        firstClosing <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        ye <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -304,8 +302,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     }
     "should close both layers if both fail to close" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        firstClosing <- TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        ye <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -321,8 +319,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner"))
+        firstClosing <- TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+        ye <- TryClose(DummyCloseable("Inner", NotThrows), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
@@ -333,8 +331,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "should not process to second statement if first throws exception - ignore second, even it it throws" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        firstClosing <- TryClose(somethingThatThrowsException("Outer"), closeHandler("Outer"))
+        ye <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Outer")))
@@ -345,8 +343,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner"))
+        firstClosing <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        ye <- TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
@@ -359,8 +357,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
 
     "process to second statement if second throws exception - with first throwing exception on close" in {
       val output = for {
-        firstClosing <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-        ye <- choppy.tryclose.TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner"))
+        firstClosing <- TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        ye <- TryClose(somethingThatThrowsException("Inner"), closeHandler("Inner"))
       } yield (ye)
 
       output.resolve should equal (Failure[DummyCloseable](new IOException(s"Closing Method Inner")))
@@ -378,7 +376,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     "with map - should process transformation but not wrap with same closeable twice" in {
 
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
           .mapWithHandler(firstClosing => firstClosing, closeHandler("Inner"))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Outer", NotThrows)))
@@ -393,8 +391,8 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     "with flatMap - can only process transformation to self twice since can't do static analysis with monads" in {
 
       val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-          .flatMap(firstClosing => choppy.tryclose.TryClose(firstClosing, closeHandler("Inner")))
+        TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+          .flatMap(firstClosing => TryClose(firstClosing, closeHandler("Inner")))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Outer", NotThrows)))
       lineage should equal(List(
@@ -410,9 +408,9 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     "Where both inner and outer layer closes fail" in {
 
       val output = for {
-        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
-        mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
-        res <- choppy.tryclose.TryClose(somethingThatThrowsException("Throwing"), closeHandler("Core")) //, wrapCloseFailure = Throws
+        mc1 <- TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        res <- TryClose(somethingThatThrowsException("Throwing"), closeHandler("Core")) //, wrapCloseFailure = Throws
       } yield (res)
 
       output.resolve should equal (Failure(new IOException("Closing Method Throwing")))
@@ -430,9 +428,9 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
     "Where only inner layer fails" in {
 
       val output = for {
-        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-        mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
-        res <- choppy.tryclose.TryClose(somethingThatThrowsException("Throwing"), closeHandler("Core")) //, wrapCloseFailure = true
+        mc1 <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        res <- TryClose(somethingThatThrowsException("Throwing"), closeHandler("Core")) //, wrapCloseFailure = true
       } yield (res)
 
       output.resolve should equal (Failure(new IOException("Closing Method Throwing")))
@@ -460,7 +458,7 @@ class TestTryCloseMonad extends TryCloseMonadSpec {
   "Testing Other Behaviors" - {
     "Shuold Create/Close Properly when multiple statements used" in {
         val output =
-        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .mapWithHandler(dc => {
             DummyCloseable("Inner", Throws)
             somethingThatThrowsException("Throwing")

@@ -1,4 +1,4 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
 object ImplicitCloseables {
 

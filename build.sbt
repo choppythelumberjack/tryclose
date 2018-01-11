@@ -7,7 +7,7 @@ lazy val `tryclose` =
 
 lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
   releaseCrossBuild := true,
-  organization := "org.choppy",
+  organization := "com.github.choppythelumberjack",
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.12","2.12.4"),
   libraryDependencies ++= Seq(

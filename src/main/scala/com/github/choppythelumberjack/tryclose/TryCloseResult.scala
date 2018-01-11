@@ -1,4 +1,4 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
 /**
   * These classes represent the final outcome from a `TryClose.resolve` invocation,

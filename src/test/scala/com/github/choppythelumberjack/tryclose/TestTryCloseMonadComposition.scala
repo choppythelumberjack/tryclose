@@ -1,19 +1,17 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
 import java.io.IOException
-
-import com.github.choppy
 
 class TestTryCloseMonadComposition extends TryCloseMonadSpec {
   "Compose For Comprehensions" in {
     val firstOutput = for {
-      mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      mc1 <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
       mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
     } yield (mc2)
 
     val output = for {
       mc1 <- firstOutput
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
+      mc2 <- TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
     } yield (mc2)
 
     output.resolve should equal (Success(DummyCloseable.OffRecord("Core", Throws)))
@@ -32,13 +30,13 @@ class TestTryCloseMonadComposition extends TryCloseMonadSpec {
 
   "Compose For Comprehensions With Throw" in {
     val firstOutput = for {
-      mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+      mc1 <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
     } yield (mc2)
 
     val output = for {
       mc1 <- firstOutput
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
+      mc2 <- TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
       mc3 <- TryClose(somethingThatThrowsException("ThrowSomething"))
     } yield (mc2)
 
@@ -59,13 +57,13 @@ class TestTryCloseMonadComposition extends TryCloseMonadSpec {
 
   "Compose For Comprehensions - With Filter Succeed" in {
     val firstOutput = for {
-      mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+      mc1 <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
     } yield (mc2)
 
     val output = for {
       mc1 <- firstOutput.filter(_.label == "Inner")
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
+      mc2 <- TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
     } yield (mc2)
 
     output.resolve should equal (Success(DummyCloseable.OffRecord("Core", Throws)))
@@ -85,13 +83,13 @@ class TestTryCloseMonadComposition extends TryCloseMonadSpec {
 
   "Compose For Comprehensions - With Filter Fail" in {
     val firstOutput = for {
-      mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+      mc1 <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      mc2 <- TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
     } yield (mc2)
 
     val output = for {
       mc1 <- firstOutput.filter(_.label == "Blah")
-      mc2 <- choppy.tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
+      mc2 <- TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
     } yield (mc2)
 
     output.resolve should equal (Failure(new java.util.NoSuchElementException("Predicate does not hold for DummyCloseable(Inner,Throws)")))

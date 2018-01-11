@@ -1,9 +1,8 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
 import java.io.IOException
 
-import com.github.choppy.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
-import com.sun.xml.internal.ws.spi.db.WrapperComposite
+import com.github.choppythelumberjack.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
 
 import scala.util.control.NonFatal
 
@@ -38,7 +37,7 @@ trait ImplicitCloseHelper {
 abstract class TryClose[+T](implicit evidence:CanClose[T]) extends ImplicitCloseHelper {
   def handler:CloseHandler = tc=>Unit
   def resolve:TryCloseResult[T] = {
-    retrieve(new IdentityContinuation)
+    retrieve(new IdentityContinuation[T])
   }
   def retrieve[U](continuation: Continuation[T, U]):TryCloseResult[U]
 

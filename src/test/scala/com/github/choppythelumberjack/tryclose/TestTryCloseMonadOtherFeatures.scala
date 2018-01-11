@@ -1,6 +1,6 @@
-package com.github.choppy.tryclose
+package com.github.choppythelumberjack.tryclose
 
-import com.github.choppy.tryclose.ImplicitCloseables._
+import ImplicitCloseables._
 
 class TestTryCloseMonadOtherFeatures extends TryCloseMonadSpec {
 
