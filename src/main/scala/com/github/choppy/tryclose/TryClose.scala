@@ -1,9 +1,9 @@
-package org.choppy.tryclose
+package com.github.choppy.tryclose
 
 import java.io.IOException
 
-import org.choppy.tryclose.TryClose.Implicits.CloseableUnit
-import org.choppy.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
+import com.github.choppy.tryclose.TryClose.Implicits.CloseableUnit
+import com.github.choppy.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
 
 import scala.util.control.NonFatal
 

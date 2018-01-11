@@ -1,8 +1,8 @@
-package org.choppy.tryclose
+package com.github.choppy.tryclose
 
 import java.io.IOException
 
-import org.choppy.tryclose
+import com.github.choppy
 
 class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
@@ -30,7 +30,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from mapped exception" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .map(dc => somethingThatThrowsException("Throwing"))
           .recoverWithHandler({case e:IOException => DummyCloseable("Inner", Throws)}, closeHandler("Inner"))
 
@@ -49,7 +49,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from mapped exception - Fail Afterward" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .map(dc => somethingThatThrowsException("Throwing"))
           .recoverWithHandler({case e:IOException => DummyCloseable("Inner", Throws)}, closeHandler("Inner"))
           .flatMap(c => TryClose(somethingThatThrowsException("SecondThrowing")))
@@ -70,7 +70,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from flat-mapped exception" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .flatMap(dc => TryClose(somethingThatThrowsException("Throwing")))
           .recoverWithHandler({case e:IOException => DummyCloseable("Inner", Throws)}, closeHandler("Inner"))
 
@@ -89,7 +89,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from flat-mapped exception - Fail Afterward" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .flatMap(dc => TryClose(somethingThatThrowsException("Throwing")))
           .recoverWithHandler({case e:IOException => DummyCloseable("Inner", Throws)}, closeHandler("Inner"))
           .flatMap(c => TryClose(somethingThatThrowsException("SecondThrowing")))
@@ -115,7 +115,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
       // into the linage
       val output =
         TryClose(somethingThatThrowsException("Throwing"))
-          .flatMap(dc => tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer")))
+          .flatMap(dc => choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer")))
           .recoverWithHandler({case e:IOException => DummyCloseable("Inner", Throws)}, closeHandler("Inner"))
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -133,7 +133,7 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
     "Should recover from exception" in {
       val output =
         TryClose(somethingThatThrowsException("Throwing"))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(
@@ -147,9 +147,9 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from mapped exception" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .map(dc => somethingThatThrowsException("Throwing"))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(
@@ -166,9 +166,9 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from mapped exception - Fail Afterward" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .map(dc => somethingThatThrowsException("Throwing"))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
           .flatMap(c => TryClose(somethingThatThrowsException("SecondThrowing")))
 
       output.resolve should equal(Failure(new IOException("Closing Method SecondThrowing")))
@@ -187,9 +187,9 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from flat-mapped exception" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .flatMap(dc => TryClose(somethingThatThrowsException("Throwing")))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(
@@ -206,9 +206,9 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Should recover from flat-mapped exception - Fail Afterward" in {
       val output =
-        tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
           .flatMap(dc => TryClose(somethingThatThrowsException("Throwing")))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
           .flatMap(c => TryClose(somethingThatThrowsException("SecondThrowing")))
 
       output.resolve should equal(Failure(new IOException("Closing Method SecondThrowing")))
@@ -232,8 +232,8 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
       // into the linage
       val output =
         TryClose(somethingThatThrowsException("Throwing"))
-          .flatMap(dc => tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer")))
-          .recoverWith({case e:IOException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
+          .flatMap(dc => choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer")))
+          .recoverWith({case e:IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))})
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
       lineage should equal(
@@ -249,11 +249,11 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
   "Three Level Cases" - {
     "Three Level Recorvery success should propagate to the third nesting" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
-          case i: IOException => tryclose.TryClose(DummyCloseable("Recovery", Throws), closeHandler("Recovery"))
+          case i: IOException => choppy.tryclose.TryClose(DummyCloseable("Recovery", Throws), closeHandler("Recovery"))
         })
-        mc3 <- tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        mc3 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (mc3)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -274,11 +274,11 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Three Level Recorvery success should propagate to the third nesting (some don't throw)" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
-          case i: IOException => tryclose.TryClose(DummyCloseable("Recovery", NotThrows), closeHandler("Recovery"))
+          case i: IOException => choppy.tryclose.TryClose(DummyCloseable("Recovery", NotThrows), closeHandler("Recovery"))
         })
-        mc3 <- tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        mc3 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (mc3)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Inner", Throws)))
@@ -299,10 +299,10 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
   "Two/Three Level Cases with Non/Recovery" - {
     "No Recovery Needed" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-        mc2 <- tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
           .recoverWith({
-            case i: IOException => tryclose.TryClose(DummyCloseable("Alternative", Throws), closeHandler("Alternative"))
+            case i: IOException => choppy.tryclose.TryClose(DummyCloseable("Alternative", Throws), closeHandler("Alternative"))
           })
       } yield (mc2)
 
@@ -319,12 +319,12 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "No Recovery Needed - Should run third nesting layer" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
-        mc2 <- tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+        mc2 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
           .recoverWith({
-            case i: IOException => tryclose.TryClose(DummyCloseable("Alternative", Throws), closeHandler("Alternative"))
+            case i: IOException => choppy.tryclose.TryClose(DummyCloseable("Alternative", Throws), closeHandler("Alternative"))
           })
-        mc3 <- tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
+        mc3 <- choppy.tryclose.TryClose(DummyCloseable("Core", Throws), closeHandler("Core"))
       } yield (mc3)
 
       output.resolve should equal(Success(DummyCloseable.OffRecord("Core", Throws)))
@@ -343,10 +343,10 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Recovery throws Exception" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
           // Should not catch this exception
-          case i: IOException => tryclose.TryClose(somethingThatThrowsException("ThrowSomethingElse"), closeHandler("Inner"))
+          case i: IOException => choppy.tryclose.TryClose(somethingThatThrowsException("ThrowSomethingElse"), closeHandler("Inner"))
         })
       } yield (mc2)
 
@@ -363,10 +363,10 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Recovery throws Exception - Should not run third nesting layer" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
           // Should not catch this exception
-          case i: IOException => tryclose.TryClose(somethingThatThrowsException("ThrowSomethingElse"), closeHandler("Inner"))
+          case i: IOException => choppy.tryclose.TryClose(somethingThatThrowsException("ThrowSomethingElse"), closeHandler("Inner"))
         })
         mc3 <- TryClose(DummyCloseable("Inner", Throws))
       } yield (mc3)
@@ -385,10 +385,10 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Recovery Does Not Catch Exception" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
           // Should not catch this exception
-          case i: IllegalArgumentException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+          case i: IllegalArgumentException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
         })
       } yield (mc2)
 
@@ -404,12 +404,12 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
 
     "Recovery Does Not Catch Exception - Should not run third nesting layer" in {
       val output = for {
-        mc1 <- tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
+        mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", Throws), closeHandler("Outer"))
         mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
           // Should not catch this exception
-          case i: IllegalArgumentException => tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+          case i: IllegalArgumentException => choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
         })
-        mc3 <- tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
+        mc3 <- choppy.tryclose.TryClose(DummyCloseable("Inner", Throws), closeHandler("Inner"))
       } yield (mc3)
 
       output.resolve should equal(Failure(new IOException("Closing Method ThrowSomething")))
@@ -428,9 +428,9 @@ class TestTryCloseMonadRecovery extends TryCloseMonadSpec {
       innerThrowingBehavior: ThrowingBehavior,
       outerThrowingBehavior: ThrowingBehavior
     ) = for {
-      mc1 <- tryclose.TryClose(DummyCloseable("Outer", outerThrowingBehavior), closeHandler("Outer"))
+      mc1 <- choppy.tryclose.TryClose(DummyCloseable("Outer", outerThrowingBehavior), closeHandler("Outer"))
       mc2 <- TryClose(somethingThatThrowsException("ThrowSomething")).recoverWith({
-        case i: IOException => tryclose.TryClose(DummyCloseable("Inner", innerThrowingBehavior), closeHandler("Inner"))
+        case i: IOException => choppy.tryclose.TryClose(DummyCloseable("Inner", innerThrowingBehavior), closeHandler("Inner"))
       })
     } yield (mc2)
 

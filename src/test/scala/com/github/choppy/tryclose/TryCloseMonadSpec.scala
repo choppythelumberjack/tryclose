@@ -1,8 +1,8 @@
-package org.choppy.tryclose
+package com.github.choppy.tryclose
 
 import java.io.{Closeable, IOException}
 
-import org.choppy.tryclose.TryClose.CloseHandler
+import com.github.choppy.tryclose.TryClose.CloseHandler
 import org.scalactic.Equality
 import org.scalatest.{BeforeAndAfterEach, FreeSpec, Matchers}
 

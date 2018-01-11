@@ -1,7 +1,7 @@
-package org.choppy.tryclose
+package com.github.choppy.tryclose
 
-import org.choppy.tryclose
-import org.choppy.tryclose.TryClose.{FakeCloseable, LambdaCloseable}
+import com.github.choppy
+import com.github.choppy.tryclose.TryClose.{FakeCloseable, LambdaCloseable}
 
 class TestTryCloseMonadOtherFeatures extends TryCloseMonadSpec {
   "using lambda to close" in {
@@ -12,7 +12,7 @@ class TestTryCloseMonadOtherFeatures extends TryCloseMonadSpec {
     implicit val lambdaCloseable = new LambdaCloseable[CustomCloseable](_.closeMe)
 
     val output = for {
-      firstClosing  <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      firstClosing  <- choppy.tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
       lambdaClosing <- TryClose(new CustomCloseable("Custom"))
     } yield (lambdaClosing)
 
@@ -33,7 +33,7 @@ class TestTryCloseMonadOtherFeatures extends TryCloseMonadSpec {
     implicit val lambdaCloseable = new FakeCloseable[CustomCloseable]
 
     val output = for {
-      firstClosing  <- tryclose.TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
+      firstClosing  <- TryClose(DummyCloseable("Outer", NotThrows), closeHandler("Outer"))
       lambdaClosing <- TryClose(new CustomCloseable("Custom"))
     } yield (lambdaClosing)
 
