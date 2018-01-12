@@ -1,6 +1,6 @@
 package com.github.choppythelumberjack.tryclose
 
-object ImplicitCloseables {
+trait ImplicitCloseables {
 
   implicit def wrapperCloseable[T]: CanClose[Wrapper[T]] =
     new CanClose[Wrapper[T]] {

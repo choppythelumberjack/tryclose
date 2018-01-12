@@ -1,7 +1,5 @@
 package com.github.choppythelumberjack.tryclose
 
-import ImplicitCloseables._
-
 class TestTryCloseMonadOtherFeatures extends TryCloseMonadSpec {
 
   "using lambda to close" in {

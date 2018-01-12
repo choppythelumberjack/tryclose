@@ -4,6 +4,7 @@ import java.io.IOException
 
 import com.github.choppythelumberjack.tryclose.TryClose.{CloseHandler, Continuation, IdentityContinuation}
 
+import scala.util.Try
 import scala.util.control.NonFatal
 
 trait CanClose[T] {
@@ -127,10 +128,28 @@ abstract class TryClose[+T](implicit evidence:CanClose[T]) extends ImplicitClose
     }
   }
 
-  // TODO Transform
-  // TODO filterWith
-  // TODO Flatten
-  // TODO Foreach
+  // TODO Need to test
+  def transform[U](s: T => TryClose[U], f: Throwable => TryClose[U])(implicit evidence: CanClose[U]): TryClose[U] = {
+    val parent = this
+    new TryClose[U] {
+      override def retrieve[W](continuation: Continuation[U, W]): TryCloseResult[W] = {
+        parent.retrieve({
+          case su @ Success(value) => s(value).retrieve(continuation)
+          case fa @ Failure(_) =>     f(fa.exception).retrieve(continuation)
+        })
+      }
+    }
+  }
+
+  // TODO Need to test
+  class WithFilter(p: T => Boolean) {
+    def map[U](f:     T => U)(implicit evidence:CanClose[U]): TryClose[U]           = TryClose.this filter p map f
+    def flatMap[U](f: T => TryClose[U])(implicit evidence:CanClose[U]): TryClose[U]      = TryClose.this filter p flatMap f
+    def withFilter(q: T => Boolean): WithFilter = new WithFilter(x => p(x) && q(x))
+  }
+
+  // TODO Need to test
+  def flatten[U](implicit ev: T <:< TryClose[U]): TryClose[U] = this.asInstanceOf[TryClose[U]]
 }
 
 case class Wrapper[+T](private val element:T) {
@@ -142,8 +161,6 @@ case class LambdaWrapper[T](element:T, close:T=>Unit) {
 }
 
 object TryClose {
-
-  import ImplicitCloseables._
 
   type CloseHandler = (TryCloseResult[Unit]) => Unit
   type Continuation[T, U] = (TryCloseResult[T]) => TryCloseResult[U]
