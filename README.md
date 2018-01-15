@@ -9,6 +9,7 @@ but other scenarios like managing streams are also good use cases.
 Using TryClose we can manage database resources like this:
 ```scala
 import com.github.choppythelumberjack.tryclose._
+import com.github.choppythelumberjack.tryclose.JavaImplicits._
   
 val ds = new JdbcDataSource()
 val output = for {
