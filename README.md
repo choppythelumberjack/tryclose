@@ -33,6 +33,7 @@ try (
      PreparedStatement ps = c.prepareStatement("select * from MyTable");
      ResultSet rs = ps.executeQuery();
 ) {
+    rs.next();
     return rs.getInt(1);
 } catch (SQLException e) {
     // Handle Stuff
@@ -58,6 +59,8 @@ try {
      conn = ds.getConnection()
      stmt = conn.prepareStatement("My Sql");
      rs = stmt.executeQuery();
+     rs.next();
+     return rs.getInt(1);
 } catch(Exception e) {
     // Error Handling
 } finally {
