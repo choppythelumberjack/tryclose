@@ -11,7 +11,8 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.12","2.12.4"),
   libraryDependencies ++= Seq(
-    "org.scalatest"   %% "scalatest"     % "3.0.4"     % Test
+    "org.scalatest"   %% "scalatest"     % "3.0.4"     % Test,
+    "com.h2database"  % "h2"             % "1.4.196"   % Test
   ),
   pomExtra := (
     <url>http://github.com/getquill/foo</url>

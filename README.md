@@ -14,9 +14,9 @@ import com.github.choppythelumberjack.tryclose.JavaImplicits._
 val ds = new JdbcDataSource()
 val output = for {
   conn  <- TryClose(ds.getConnection())
-  stmt  <- TryClose(conn.prepareStatement("select * from MyTable"))
-  rs    <- TryClose(ps.executeQuery())
-} yield (rs.getInt(1))
+  ps  <- TryClose(conn.prepareStatement("select * from MyTable"))
+  rs    <- TryClose.wrap(ps.executeQuery())
+} yield wrap { rs.next(); rs.getInt(1) }
     
 // Note that Nothing will actually be done until 'resolve' is called
 output.resolve match {
@@ -114,9 +114,9 @@ def createConnectionAndStatement(url) = {
 
 // Now compose the previous with further statements
 val output = for {
-  stmt  <- createConnectionAndStatement("jdbc:...")
-  rs    <- TryClose(ps.executeQuery())
-} yield (rs.getInt(1))
+  ps <- createConnectionAndStatement("jdbc:...")
+  rs <- TryClose(ps.executeQuery())
+} yield wrap { rs.next(); rs.getInt(1) }
     
 // Since nothing is done until output.resolve is called, you can continue
 // nesting TryClose statements and re-use createConnection(url) as many
@@ -140,7 +140,11 @@ def createConnection(url) = {
                    conn.prepareStatement("select * from MyTable")
                    ps.executeQuery()
                })
-    } yield (rs.getInt(1))
+    } yield wrap {
+        // It's find to do this since nothing here needs to be closed 
+        rs.next(); 
+        rs.getInt(1) 
+    }
 }
 ```
 
@@ -174,7 +178,7 @@ val output = for {
     
 // Note that this will return a TryCloseResult[LambdaWrapped[T]], you can extract
 // your item (the List[Int] in this case) via the Wrapped.get command.
-output.map(_.get) match {
+output.resolve match {
   case Success(cc) => cc.getData
   case Failure(e) =>
 } 
@@ -193,12 +197,12 @@ class MyCustomCloseable(url:String) {
        
 // Use the wrapWithCloser method to specify a custom lambda to close your custom object.
 val output = for {
-  cc  <- TryClose.wrapWithCloser(new MyCustomCloseable(url)(_.closeMe))
+  cc  <- TryClose.wrapWithCloser(new MyCustomCloseable(url))(_.closeMe)
 } yield (cc)
     
 // Note that this will return a TryCloseResult[LambdaWrapped[T]], you can extract
 // your item (the List[Int] in this case) via the Wrapped.get command.
-output.map(_.get) match {
+output.resolve.map(_.get) match {
   case Success(cc) => cc.getData
   case Failure(e) =>
 } 
@@ -229,14 +233,34 @@ val output = for {
     
 // Note that this will return a TryCloseResult[Wrapped[T]], you can extract
 // your item (the List[Int] in this case) via the Wrapped.get command.
-output.map(_.get) match {
+output.resolve.map(_.get) match {
   case Success(list) =>
   case Failure(e) =>
 } 
 ```
 
 ### Recovery
-TODO
+TryClose has a Recovery api that works roughly the same way as in Try. The available methods are
+`TryClose.recover`, `TryClose.recoverWith`, and `TryClose.transform`.
+
+```scala
+// recover
+TryClose(someOperation)
+  .recover {
+    case e: IOException => alternativeOperation
+  }
+
+// recoverWith
+TryClose(someOperation)
+  .recoverWith {
+    case e: IOException => TryClose(alternativeOperation)
+  }
+    
+TryClose(someOperation)
+  .transform {
+    case e: IOException => TryClose(alternativeOperation)
+  }
+```
 
 ### Result Types
 TODO

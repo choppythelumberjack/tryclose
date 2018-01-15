@@ -3,19 +3,11 @@ package com.github.choppythelumberjack.tryclose
 import java.io.{Closeable, IOException}
 
 import com.github.choppythelumberjack.tryclose.TryClose.CloseHandler
-import org.scalactic.Equality
 import org.scalatest.{BeforeAndAfterEach, FreeSpec, Matchers}
 
 import scala.collection.mutable
 
-class TryCloseMonadSpec extends FreeSpec with Matchers with BeforeAndAfterEach {
-  implicit def failureEquality[T]:Equality[TryCloseResult[T]] = new Equality[TryCloseResult[T]] {
-    override def areEqual(a: TryCloseResult[T], b: Any): Boolean =
-      (a, b) match {
-        case (Failure(fa), Failure(fb)) => fa.getClass == fb.getClass && fa.getMessage == fb.getMessage
-        case other @ _ => Equality.default.areEqual(a, b)
-      }
-  }
+class TryCloseMonadSpec extends FreeSpec with Matchers with BeforeAndAfterEach with FailureEqualityComparison {
 
   sealed trait Marker
   case class Open(str:String) extends Marker
