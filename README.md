@@ -26,6 +26,22 @@ output.resolve match {
 ```
 (See the full example in the documentation [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L17))
 
+You can fine TryClose on maven central, add the following to your pom:
+```xml
+<dependency>
+    <groupId>com.github.choppythelumberjack</groupId>
+    <artifactId>tryclose_2.11</artifactId>
+    <version>1.0.0</version>
+</dependency>
+``` 
+
+Or the following to your sbt libraries:
+```scala
+libraryDependencies += "com.github.choppythelumberjack" %% "tryclose" % "1.0.0"
+```
+
+## Comparison to Java Try-With-Reources
+
 The Java analogue using try-with-resources would look like this:
 ```java
 DataSource ds = new JdbcDataSource();
