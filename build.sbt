@@ -14,6 +14,35 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
     "org.scalatest"   %% "scalatest"     % "3.0.4"     % Test,
     "com.h2database"  % "h2"             % "1.4.196"   % Test
   ),
+  pgpSecretRing := file("local.secring.gpg"),
+  pgpPublicRing := file("local.pubring.gpg"),
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  releaseProcess := {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 11)) =>
+        Seq[ReleaseStep](
+          checkSnapshotDependencies,
+          inquireVersions,
+          runClean,
+          setReleaseVersion,
+          commitReleaseVersion,
+          tagRelease,
+          publishArtifacts,
+          setNextVersion,
+          commitNextVersion,
+          pushChanges
+        )
+      case Some((2, 12)) =>
+        Seq[ReleaseStep](
+          checkSnapshotDependencies,
+          inquireVersions,
+          runClean,
+          setReleaseVersion,
+          publishArtifacts
+        )
+      case _ => Seq[ReleaseStep]()
+    }
+  },
   pomExtra := (
     <url>http://github.com/getquill/foo</url>
     <scm>

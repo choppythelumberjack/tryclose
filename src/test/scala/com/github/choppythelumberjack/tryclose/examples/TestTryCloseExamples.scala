@@ -26,7 +26,13 @@ class TestTryCloseExamples extends FreeSpec with Matchers with FailureEqualityCo
     } yield wrap {rs.next(); rs.getInt(1)}
 
     // Note that Nothing will actually be done until 'resolve' is called
+    output.resolve.map(_.get) should be (Success(22))
+
+    // You can use a shorthald with wrapped results
     output.resolve.unwrap should be (Success(22))
+
+    // or even shorter
+    output.unwrap should be (Success(22))
   }
 
   "composition example" in {

@@ -11,4 +11,12 @@ package object tryclose extends ImplicitCloseables {
   implicit class LambdaWrappedResultExtensions[T](result:TryCloseResult[LambdaWrapper[T]]) {
     def unwrap = result.map(_.get)
   }
+
+  implicit class WrappedTryCloseExtensions[T](tc:TryClose[Wrapper[T]]) {
+    def unwrap = tc.resolve.unwrap
+  }
+
+  implicit class LambdaTryCloseResultExtensions[T](tc:TryClose[LambdaWrapper[T]]) {
+    def unwrap = tc.resolve.unwrap
+  }
 }

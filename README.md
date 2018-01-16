@@ -14,9 +14,9 @@ import com.github.choppythelumberjack.tryclose.JavaImplicits._
 val ds = new JdbcDataSource()
 val output = for {
   conn  <- TryClose(ds.getConnection())
-  ps  <- TryClose(conn.prepareStatement("select * from MyTable"))
+  ps    <- TryClose(conn.prepareStatement("select * from MyTable"))
   rs    <- TryClose.wrap(ps.executeQuery())
-} yield wrap { rs.next(); rs.getInt(1) }
+} yield wrap(extractResult(rs))
     
 // Note that Nothing will actually be done until 'resolve' is called
 output.resolve match {
@@ -24,6 +24,7 @@ output.resolve match {
     case Failure(e) =>      // Handle Stuff
 }
 ```
+(See the full example in the documentation [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L17))
 
 The Java analogue using try-with-resources would look like this:
 ```java
@@ -126,6 +127,8 @@ val output = for {
 // times as needed.
 output.resolve
 ```
+(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L32))
+
 It is important to note however that each invocation of TryClose should have exactly
 one closeable statement returned. If multiple statements are specified inside the TryClose,
 only the last one will be closed when `resolve` is called. For example:
@@ -186,6 +189,7 @@ output.resolve match {
   case Failure(e) =>
 } 
 ```
+(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L58))
 
 #### 2. Use TryMonad.wrapWithCloser
 ```scala
@@ -210,6 +214,7 @@ output.resolve.map(_.get) match {
   case Failure(e) =>
 } 
 ```
+(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L100))
 
 ### Non-Closeables
 
@@ -239,7 +244,15 @@ val output = for {
 output.resolve.map(_.get) match {
   case Success(list) =>
   case Failure(e) =>
-} 
+}
+  
+// This wrap/unwrap pattern is in fact so common that there is a dedicated method for it
+ output.resolve.unwrap match {
+   case Success(list) =>
+   case Failure(e) =>
+ }
+ 
+ 
 ```
 
 ### Recovery
@@ -260,10 +273,8 @@ TryClose(someOperation)
   }
     
 TryClose(someOperation)
-  .transform {
-    case e: IOException => TryClose(alternativeOperation)
-  }
+  .transform (
+    successResult => TryClose(someOtherOperation),
+    exception     => TryClose(recoveryOperation) 
+  )
 ```
-
-### Result Types
-TODO
