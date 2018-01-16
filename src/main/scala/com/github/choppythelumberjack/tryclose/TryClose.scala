@@ -160,7 +160,7 @@ case class LambdaWrapper[T](element:T, close:T=>Unit) {
 object TryClose {
 
   type CloseHandler = (TryCloseResult[Unit]) => Unit
-  type Continuation[T, U] = (TryCloseResult[T]) => TryCloseResult[U]
+  type Continuation[-T, +U] = (TryCloseResult[T]) => TryCloseResult[U]
 
   class IdentityContinuation[T] extends Continuation[T, T] {
     override def apply(s: TryCloseResult[T]): TryCloseResult[T] = s
