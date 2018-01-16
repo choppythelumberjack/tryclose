@@ -6,6 +6,7 @@ lazy val `tryclose` =
     .settings(commonSettings)
 
 lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
+  licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt")),
   releaseCrossBuild := true,
   organization := "com.github.choppythelumberjack",
   scalaVersion := "2.11.12",
