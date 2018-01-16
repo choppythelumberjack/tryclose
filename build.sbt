@@ -14,9 +14,15 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
     "org.scalatest"   %% "scalatest"     % "3.0.4"     % Test,
     "com.h2database"  % "h2"             % "1.4.196"   % Test
   ),
-  pgpSecretRing := file("local.secring.gpg"),
-  pgpPublicRing := file("local.pubring.gpg"),
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  publishMavenStyle := true,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+  },
   releaseProcess := {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 11)) =>
