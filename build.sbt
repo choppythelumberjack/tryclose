@@ -36,6 +36,7 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
           publishArtifacts,
           setNextVersion,
           commitNextVersion,
+          releaseStepCommand("sonatypeReleaseAll"),
           pushChanges
         )
       case Some((2, 12)) =>
@@ -44,7 +45,8 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ Seq(
           inquireVersions,
           runClean,
           setReleaseVersion,
-          publishArtifacts
+          publishArtifacts,
+          releaseStepCommand("sonatypeReleaseAll")
         )
       case _ => Seq[ReleaseStep]()
     }
