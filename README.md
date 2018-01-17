@@ -24,9 +24,23 @@ output.resolve match {
     case Failure(e) =>      // Handle Stuff
 }
 ```
-(See the full example in the documentation [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L17))
+*(See the full example in the documentation [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L17))*
 
-You can fine TryClose on maven central, add the following to your pom:
+You can also use it to nest output streams, each of which will be individually closed.
+```scala
+val output = for {
+  outputStream      <- TryClose(new ByteArrayOutputStream())
+  gzipOutputStream  <- TryClose(new GZIPOutputStream(outputStream))
+  _                 <- TryClose.wrap(gzipOutputStream.write(content))
+} yield wrap({gzipOutputStream.flush(); outputStream.toByteArray})
+  
+output.resolve.unwrap match {
+  case Success(bytes) => // process result
+  case Failure(e) => // handle exception
+}
+```
+
+You can find TryClose on maven central, add the following to your pom:
 ```xml
 <dependency>
     <groupId>com.github.choppythelumberjack</groupId>
@@ -143,7 +157,7 @@ val output = for {
 // times as needed.
 output.resolve
 ```
-(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L32))
+*(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L32))*
 
 It is important to note however that each invocation of TryClose should have exactly
 one closeable statement returned. If multiple statements are specified inside the TryClose,
@@ -163,7 +177,7 @@ def createConnection(url) = {
                    ps.executeQuery()
                })
     } yield wrap {
-        // It's find to do this since nothing here needs to be closed 
+        // It's fine to do this since nothing here needs to be closed 
         rs.next(); 
         rs.getInt(1) 
     }
@@ -205,7 +219,7 @@ output.resolve match {
   case Failure(e) =>
 } 
 ```
-(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L58))
+*(see the full sample [here](https://github.com/choppythelumberjack/tryclose/blob/master/src/test/scala/com/github/choppythelumberjack/tryclose/examples/TestTryCloseExamples.scala#L58))*
 
 #### 2. Use TryMonad.wrapWithCloser
 ```scala
